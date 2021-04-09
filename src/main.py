@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, People, Planets, Films
+from models import db, User, People, Planets, Films, Favorites
 from flask_jwt_extended import create_access_token
 from flask_jwt_extended import get_jwt_identity
 from flask_jwt_extended import jwt_required
@@ -20,7 +20,7 @@ app = Flask(__name__)
 app.url_map.strict_slashes = False
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DB_CONNECTION_STRING')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["JWT_SECRET_KEY"] = "secret!!!"
+app.config["JWT_SECRET_KEY"] = os.environ.get('SALA_TRES')
 jwt = JWTManager(app)
 MIGRATE = Migrate(app, db)
 db.init_app(app)
@@ -51,7 +51,7 @@ def login():
     username = request.json.get("username", None)
     password = request.json.get("password", None)
     if username != "test" or password != "test":
-        return jsonify({"msg": "Bad username or password"}), 401
+        return jsonify({"msg": "Wrong username or password"}), 401
 
     access_token = create_access_token(identity=username)
     return jsonify(access_token=access_token)
@@ -62,10 +62,26 @@ def protected():
     # Access the identity of the current user with get_jwt_identity
     current_user = get_jwt_identity()
     return jsonify(logged_in_as=current_user), 200
+
 @app.route('/people', methods=['GET'])
 def handle_people():  
     
     return jsonify(People.getAllPeople()), 200
+
+@app.route('/favorites/<int:id>', methods=['POST'])
+@jwt_required()
+def handle_favoritespost(id):  
+    
+    return jsonify(Favorites.getAllFavorites(id)), 200
+
+@app.route('/favorites/', methods=['GET'])
+@jwt_required()
+def handle_favoritesget():
+
+    current_user = get_jwt_identity()
+    user = User.query.filter_by(username=current_user)
+    print(user.id)
+    return jsonify(Favorites.query.filter_by(user_id=current_user)), 200
 
 @app.route('/planets', methods=['GET'])
 def handle_planets():  

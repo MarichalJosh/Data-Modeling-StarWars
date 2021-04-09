@@ -9,7 +9,10 @@ class User(db.Model):
     firstname = db.Column(db.String(15), nullable=False)
     lastname = db.Column(db.String(15), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    password = db.Column(db.String(15), unique=True, nullable=False)
+    password = db.Column(db.String(15), unique=True, nullable=False)    
+
+    def __repr__(self):
+        return '<User %r>' % self.username
 
     def serialize(self):
         return {
@@ -17,18 +20,24 @@ class User(db.Model):
             "username": self.username,
             "firstname": self.firstname,
             "lastname": self.lastname,
-            "email": self.email           
+            "email": self.email
+            #"favorites": list(map(lambda x: x.serialize(), self.favorites))           
         }
+        
 
 class People(db.Model):
     __tablename__ = 'people'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(28), nullable=False)
     
+    def __repr__(self):
+        return '<People %r>' % self.name
+    
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name           
+            "name": self.name
+            #"favorites": list(map(lambda x: x.serialize(), self.favorites))           
         }
     
     def getAllPeople():
@@ -40,16 +49,47 @@ class People(db.Model):
         person = People.query.get(id)
         return person.serialize()
 
+class Favorites(db.Model):
+    __tablename__= 'favorites'
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.String(10), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
+    planets_id = db.Column(db.Integer, db.ForeignKey("planets.id"))
+    people_id = db.Column(db.Integer, db.ForeignKey("people.id"))
+    films_id = db.Column(db.Integer, db.ForeignKey("films.id"))
+    user= db.relationship('User', lazy=True)  
+    planets= db.relationship('Planets', lazy=True)  
+    people= db.relationship('People', lazy=True)  
+    films= db.relationship('Films', lazy=True)  
+
+    def serialize(self):
+        return {
+            "id": self.id,
+            "date": self.date           
+        }
+    def getAllFavorites(id):
+        favorites = Favorites.query.get(id)        
+        favorites = list(map(lambda x: x.serialize(), favorites))
+        return favorites
+
+    def getAllFavoritesPost(id, postobj):
+        postfavorites = Favorites.query.get(id)
+
+
 
 class Planets(db.Model):
     __tablename__ = 'planets'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(28), nullable=False)
 
+    def __repr__(self):
+        return '<Planets %r>' % self.name    
+
     def serialize(self):
         return {
             "id": self.id,
-            "name": self.name           
+            "name": self.name
+            #"favorites": list(map(lambda x: x.serialize(), self.favorites))           
         }
     def getAllPlanets():
         all_planets = Planets.query.all()
@@ -61,13 +101,17 @@ class Films(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(28), nullable=False)
 
+    def __repr__(self):
+        return '<Films %r>' % self.title    
+
     def serialize(self):
         return {
             "id": self.id,
-            "title": self.title           
+            "title": self.title
+            #"favorites": list(map(lambda x: x.serialize(), self.favorites))           
         }
     def getAllFilms():
         all_films = Films.query.all()
         all_films = list(map(lambda x: x.serialize(), all_films))
         return all_films
-    
+
