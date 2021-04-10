@@ -63,9 +63,16 @@ class Favorites(db.Model):
     films= db.relationship('Films', lazy=True)  
 
     def serialize(self):
+        if self.people_id is not None:
+            value =  People.query.get(self.people_id).name
+        elif self.planets_id is not None:
+            value =  Planets.query.get(self.planets_id).name
+        elif self.films_id is not None:
+            value =  Films.query.get(self.films_id).title
         return {
             "id": self.id,
-            "date": self.date           
+            "date": self.date,
+            "name": value         
         }
     def getAllFavorites(id):
         favorites = Favorites.query.get(id)        
@@ -98,8 +105,9 @@ class Planets(db.Model):
 
 class Films(db.Model):
     __tablename__ = 'films'
-    id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(28), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)    
+    title = db.Column(db.String(100), nullable=False)  
+    director = db.Column(db.String(50), nullable=False)
 
     def __repr__(self):
         return '<Films %r>' % self.title    

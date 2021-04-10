@@ -48,12 +48,13 @@ def handle_hello():
 
 @app.route("/login", methods=["POST"])
 def login():
-    username = request.json.get("username", None)
-    password = request.json.get("password", None)
-    if username != "test" or password != "test":
-        return jsonify({"msg": "Wrong username or password"}), 401
+    user = request.json.get("username", None)
+    pasw = request.json.get("password", None)
+    finduser= User.query.filter_by(username=user, password=pasw).first()
+    if finduser is None:
+        return jsonify({"msg": "Invalid Information"}), 401
 
-    access_token = create_access_token(identity=username)
+    access_token = create_access_token(identity=user)
     return jsonify(access_token=access_token)
 
 @app.route("/protected", methods=["GET"])
@@ -68,6 +69,8 @@ def handle_people():
     
     return jsonify(People.getAllPeople()), 200
 
+#Start App routes for Favorites
+
 @app.route('/favorites/<int:id>', methods=['POST'])
 @jwt_required()
 def handle_favoritespost(id):  
@@ -79,9 +82,13 @@ def handle_favoritespost(id):
 def handle_favoritesget():
 
     current_user = get_jwt_identity()
-    user = User.query.filter_by(username=current_user)
-    print(user.id)
-    return jsonify(Favorites.query.filter_by(user_id=current_user)), 200
+    user = User.query.filter_by(username=current_user).first()
+    response = Favorites.query.filter_by(user_id=user.id)
+    all_favorites = list(map(lambda x: x.serialize(), response))
+    print(all_favorites)
+    return jsonify(all_favorites), 200
+
+#End App routes for Favorites
 
 @app.route('/planets', methods=['GET'])
 def handle_planets():  
