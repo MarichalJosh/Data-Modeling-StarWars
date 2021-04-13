@@ -71,11 +71,20 @@ def handle_people():
 
 #Start App routes for Favorites
 
-@app.route('/favorites/<int:id>', methods=['POST'])
+@app.route('/favorites/', methods=['POST'])
 @jwt_required()
-def handle_favoritespost(id):  
+def handle_favorites():
+    favorites_pack = request.json
+    new_favorites = Favorites(favorites_pack["name"])
+    #for favorite in new_favorites:
+    db.session.add(new_favorites)            
+    db.session.commit()
+    response_body = {
+        "status": "Ok"
+    }
+    status_code = 200 
     
-    return jsonify(Favorites.getAllFavorites(id)), 200
+    return jsonify(response_body), status_code
 
 @app.route('/favorites/', methods=['GET'])
 @jwt_required()

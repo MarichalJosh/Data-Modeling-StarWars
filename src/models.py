@@ -52,7 +52,8 @@ class People(db.Model):
 class Favorites(db.Model):
     __tablename__= 'favorites'
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.String(10), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    date = db.Column(db.String(10), nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey("user.id"))
     planets_id = db.Column(db.Integer, db.ForeignKey("planets.id"))
     people_id = db.Column(db.Integer, db.ForeignKey("people.id"))
@@ -62,6 +63,10 @@ class Favorites(db.Model):
     people= db.relationship('People', lazy=True)  
     films= db.relationship('Films', lazy=True)  
 
+    def __init__(self):
+        self.name = name
+
+
     def serialize(self):
         if self.people_id is not None:
             value =  People.query.get(self.people_id).name
@@ -70,18 +75,14 @@ class Favorites(db.Model):
         elif self.films_id is not None:
             value =  Films.query.get(self.films_id).title
         return {
-            "id": self.id,
-            "date": self.date,
+            #"id": self.id,
+            #"date": self.date,
             "name": value         
         }
     def getAllFavorites(id):
         favorites = Favorites.query.get(id)        
         favorites = list(map(lambda x: x.serialize(), favorites))
         return favorites
-
-    def getAllFavoritesPost(id, postobj):
-        postfavorites = Favorites.query.get(id)
-
 
 
 class Planets(db.Model):
