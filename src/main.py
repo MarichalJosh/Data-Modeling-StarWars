@@ -74,15 +74,42 @@ def handle_people():
 @app.route('/favorites/', methods=['POST'])
 @jwt_required()
 def handle_favorites():
-    favorites_pack = request.json
-    new_favorites = Favorites(favorites_pack["name"])
-    #for favorite in new_favorites:
-    db.session.add(new_favorites)            
+    favorites_pack = request.json    
+    user = favorites_pack["username"]
+    fav = favorites_pack["value"]
+    finduser = User.query.filter_by(username= user).first()
+    findpeople = People.query.filter_by(name= fav).first()
+    findplanets = Planets.query.filter_by(name= fav).first()
+    findfilms = Films.query.filter_by(title= fav).first()    
+    if findpeople is not None:
+        peoplefavorites = Favorites(user_id= finduser.id, people_id= findpeople.id)
+        db.session.add(peoplefavorites)
+    elif findplanets is not None:
+        planetsfavorites = Favorites(user_id= finduser.id, planets_id= findplanets.id)
+        db.session.add(planetsfavorites)
+    elif findfilms is not None:        
+        filmsfavorites = Favorites(user_id= finduser.id, films_id= findfilms.id)        
+        db.session.add(filmsfavorites)
     db.session.commit()
     response_body = {
         "status": "Ok"
     }
     status_code = 200 
+    
+    return jsonify(response_body), status_code
+
+@app.route('/favorites/<int:id>', methods=['DELETE'])
+@jwt_required()
+def handle_deletefavorites(id):
+    favdel= Favorites.query.get(id)
+    if favdel is None:
+        raise APIException('Favorite not found', status_code=404)
+    db.session.delete(favdel)
+    db.session.commit()
+    response_body = {
+        "status": "Ok"
+    }
+    status_code = 200
     
     return jsonify(response_body), status_code
 
