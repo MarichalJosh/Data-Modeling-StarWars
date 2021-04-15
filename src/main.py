@@ -46,6 +46,20 @@ def handle_hello():
 
     return jsonify(response_body), 200
 
+@app.route('/register/', methods=['POST'])
+def handle_register():
+    register_pack = request.json        
+    newuser = User(username= register_pack["username"], firstname= register_pack["firstname"], lastname= register_pack["lastname"], email= register_pack["email"], password= register_pack["password"])
+    print(newuser)
+    db.session.add(newuser)
+    db.session.commit()
+    response_body = {
+        "status": "Ok"
+    }
+    status_code = 200 
+    
+    return jsonify(response_body), status_code
+
 @app.route("/login", methods=["POST"])
 def login():
     user = request.json.get("username", None)
