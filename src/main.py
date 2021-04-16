@@ -88,7 +88,8 @@ def handle_people():
 @app.route('/favorites/', methods=['POST'])
 @jwt_required()
 def handle_favorites():
-    favorites_pack = request.json    
+    favorites_pack = request.json
+    print("Request", favorites_pack)    
     user = favorites_pack["username"]
     fav = favorites_pack["value"]
     finduser = User.query.filter_by(username= user).first()
